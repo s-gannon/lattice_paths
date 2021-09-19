@@ -29,6 +29,8 @@ table_str(t: Sequence[Sequence[int]])
 """
 
 from math import factorial
+from itertools import combinations
+from functools import reduce
 
 class LexOrderer:
     """
@@ -78,8 +80,8 @@ class LexOrderer:
         e_loc = list(self.__find_all_e())
         trail = self.__trailing_e()
         swap = e_loc[-1*trail-1]
-        self.string = self.string[:swap]+self.string[swap+1]+
-                          self.string[swap]+self.string[swap+2:]
+        self.string = (self.string[:swap]+self.string[swap+1]+
+                          self.string[swap]+self.string[swap+2:])
         self.__reverse(swap+2,self.path_length-1)
         return self.string
 
@@ -87,8 +89,8 @@ class LexOrderer:
         """
         Number of lattice paths.
         """
-        return factorial(self.e_num+self.n_num)/
-                        (factorial(self.e_num)*factorial(self.e_num))
+        return (factorial(self.e_num+self.n_num)/
+                        (factorial(self.e_num)*factorial(self.e_num)))
 
     def __trailing_e(self):
         """
@@ -297,6 +299,41 @@ def table_str(t):
     fmt = '\t'.join('{{:{}}}'.format(x) for x in lens)
     table = [fmt.format(*row) for row in s]
     return '\n'.join(table)
+
+def all_maximal_sets(e,n,k):
+    """
+    Returns a list of maximal sets of k distinct paths.
+
+    Parameters
+    ----------
+    e : int
+        Number of east steps in the lattice paths
+    n : int
+        Number of north steps in the lattice paths
+    k : int
+        The minimum number of shared edges required for two lattice paths to be
+        considered equivalent
+
+    Returns
+    -------
+    list[list[str]]
+        a list of lists of k-distinct paths that have the same cardinality as
+        that given by the greedy algorithm
+    """
+    sets = [maximal_set(e, n, k)]
+    cardinality = len(sets[0])
+    all_paths = list(LexOrderer(e,n))
+    for combo in combinations(all_paths, cardinality):
+        add = True
+        if reduce(lambda x, y : x and y, map(lambda p, q: p == q,sets[0],combo), True):
+            continue
+        for i in range(1,len(combo)):
+            if equivalent_in_set(combo[i-1], combo[i:], k):
+                add = False
+                break
+        if add:
+            sets.append(combo)
+    return sets
 
 if __name__=="__main__":
     test = {'e':4,'n':3}
