@@ -28,7 +28,7 @@ table_str(t: Sequence[Sequence[int]])
     returns a printable string given a table returned by generate_table
 """
 
-from math import factorial
+from math import factorial, floor
 from itertools import combinations
 from functools import reduce
 
@@ -179,7 +179,7 @@ class Edges:
 def equivalent(edges1, edges2, k):
     """
     Determines whether or not the lattice paths given by the two edges are
-    equivalent.
+    k-equivalent.
 
     Parameters
     ----------
@@ -322,10 +322,10 @@ def all_maximal_sets(e,n,k):
     """
     sets = [maximal_set(e, n, k)]
     cardinality = len(sets[0])
-    all_paths = list(LexOrderer(e,n))
-    for combo in combinations(all_paths, cardinality):
+    for combo in combinations(LexOrderer(e,n), cardinality):
         add = True
-        if reduce(lambda x, y : x and y, map(lambda p, q: p == q,sets[0],combo), True):
+        if reduce(lambda x, y : x and y,
+                  map(lambda p, q: p == q,sets[0],combo), True):
             continue
         for i in range(1,len(combo)):
             if equivalent_in_set(combo[i-1], combo[i:], k):
@@ -335,6 +335,50 @@ def all_maximal_sets(e,n,k):
             sets.append(combo)
     return sets
 
+def find_distinct_set(e,n,k,a):
+    """
+    Returns a k-distinct set of lattice paths on an e by n lattice. The set will
+    be of size a, or None will be returned.
+
+    Parameters
+    ----------
+    e : int
+        Number of east steps in the lattice paths
+    n : int
+        Number of north steps in the lattice paths
+    k : int
+        The minimum number of shared edges required for two lattice paths to be
+        considered equivalent
+    a : int
+        The size of the k-distinct set to generate
+
+    Returns
+    -------
+    tuple[str]
+        a tuple containing a k-distinct lattice paths, or None if none exists
+    """
+    for combo in combinations(LexOrderer(e,n),a):
+        equiv = False
+        for i in range(1,len(combo)):
+            if equivalent_in_set(combo[i-1], combo[i:], k):
+                equiv = True
+                break
+        if not equiv:
+            return combo
+    return None
+
 if __name__=="__main__":
-    test = {'e':4,'n':3}
-    print(table_str(generate_table(**test)))
+    m_plus_n = 2
+    while True:
+        for i in range(1,floor(m_plus_n/2)+1):
+            for j in range(m_plus_n+1):
+                greedy_set = maximal_set(i, m_plus_n-i, j)
+                bigger_set = find_distinct_set(i,m_plus_n-i,j,len(greedy_set)+1)
+                if bigger_set is None:
+                    print(f"Success for P({i},{m_plus_n-i},{j})="+
+                          f"{len(greedy_set)}")
+                else:
+                    print(f"Fail for e={i}, n={m_plus_n-i}, and k={j}. "+
+                           f"Greedy algorithm returns {greedy_set} but "+
+                           f"{bigger_set} is {j}-distinct.")
+        m_plus_n += 1
