@@ -26,6 +26,11 @@ generate_table(e: int, n: int)
     maximal set of e by n lattice paths for all k
 table_str(t: Sequence[Sequence[int]])
     returns a printable string given a table returned by generate_table
+all_maximal_sets(e: int, n: int, k:int)
+    returns a list of maximal sets of k distinct paths using the greedy
+    algorithm
+find_distinct_set(e: int, n: int, k: int, a: int)
+    returns a k-distinct set of size a of lattice paths on an e by n lattice
 """
 
 from math import factorial, floor
@@ -133,7 +138,8 @@ class Edges:
     Methods
     -------
     Edges(path: str)
-
+        Return an Edges generator that will return the edges of a particular
+        lattice path in order. The edges are in the form (x1, y1, x2, y2).
     """
 
     def __init__(self, path):
