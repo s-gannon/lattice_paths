@@ -378,13 +378,13 @@ if __name__=="__main__":
     while True:
         for i in range(1,floor(m_plus_n/2)+1):
             for j in range(m_plus_n+1):
-                greedy_set = maximal_set(i, m_plus_n-i, j)
-                bigger_set = find_distinct_set(i,m_plus_n-i,j,len(greedy_set)+1)
+                greedy_set = maximal_set(m_plus_n-i, i, j)
+                bigger_set = find_distinct_set(m_plus_n-i,i,j,len(greedy_set)+1)
                 if bigger_set is None:
-                    print(f"Success for P({i},{m_plus_n-i},{j})="+
+                    print(f"Success for P({m_plus_n-i},{i},{j})="+
                           f"{len(greedy_set)}")
                 else:
-                    print(f"Fail for e={i}, n={m_plus_n-i}, and k={j}. "+
+                    print(f"Fail for e={m_plus_n-i}, n={i}, and k={j}. "+
                            f"Greedy algorithm returns {greedy_set} but "+
                            f"{bigger_set} is {j}-distinct.")
         m_plus_n += 1
