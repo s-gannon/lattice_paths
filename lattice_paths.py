@@ -33,8 +33,9 @@ generate_table(m: int, n: int)
 all_greedy_size_sets(m: int, n: int, k:int)
     returns a list of sets of k distinct paths that have the same cardinality as
     the set given by the greedy algorithm
-find_distinct_set(m: int, n: int, k: int, a: int)
-    returns a k-distinct set of size a of lattice paths on an e by n lattice
+find_distinct_sets(m: int, n: int, k: int, a: int)
+    returns a list of al k-distinct sets of size a of lattice paths on an e by n
+    lattice
 find_all_distinct_sets(m: int, n: int)
     generator function that returns all k-distinct sets on the e by n lattice
     for all k
@@ -505,10 +506,10 @@ def all_greedy_size_sets(m,n,k):
             sets.append(combo)
     return sets
 
-def find_distinct_set(m,n,k,a):
+def find_distinct_sets(m,n,k,a):
     """
-    Returns a k-distinct set of lattice paths on an m by n lattice. The set will
-    be of size a, or None will be returned.
+    Returns all k-distinct sets of lattice paths on an m by n lattice. The sets
+    will be of size a, or None will be returned.
 
     Parameters
     ----------
@@ -520,20 +521,23 @@ def find_distinct_set(m,n,k,a):
         The minimum number of shared edges required for two lattice paths to be
         considered equivalent
     a : int
-        The size of the k-distinct set to generate
+        The size of the k-distinct sets to generate
 
     Returns
     -------
-    tuple[str]
-        a tuple containing a k-distinct lattice paths, or None if none exists
+    list[tuple[str]]
+        a list containing tuples containing k-distinct sets of lattice paths, or
+        None if none exists
     """
+    sets = []
     # loop over all combinations of paths of a give size a
     for combo in combinations(LexOrderer(m,n),a):
-        # if the paths are distinct, return the set
+        # if the paths are distinct, add it to the list
         if k_distinct(combo,k):
-            return combo
-    # if we get through the loop without returning anything, return None (null)
-    return None
+            sets.append(combo)
+    # if the length of the list of sets is zero, return None; otherwise, return
+    # the list
+    return None if len(sets)==0 else sets
 
 def find_all_distinct_sets(m,n):
     """
@@ -570,6 +574,47 @@ def find_all_distinct_sets(m,n):
         # subset of that one
         if not count:
             break
+
+def greedy_max_comparison(m,n):
+    """
+
+
+    Parameters
+    ----------
+    m : int
+        Number of east steps in the lattice paths
+    n : int
+        Number of north steps in the lattice paths
+
+    Returns
+    -------
+
+    """
+    results = DataFrame(columns = ['m','n','k','greedy_cardinality',
+                                   'max_cardinality','greedy_set','max_sets',
+                                   'greedy_is_max'])
+    for k in range(m+n+1):
+        next_result = {'m': m,'n': n, 'k': k}
+        next_result['greedy_set'] = tuple(greedy_set(m, n, k))
+        next_result['greedy_cardinality'] = len(next_result['greedy_set'])
+        up_bound = sum([comb(k,i) for i in range(0,n)])
+        if up_bound == next_result['greedy_cardinality']:
+            next_result['greedy_is_max'] = True
+            next_result['max_cardinality'] = next_result['greedy_cardinality']
+            next_result['max_sets'] = find_distinct_sets(m,n,k,
+                                                 next_result['max_cardinality'])
+        else:
+            size = up_bound
+            distinct_sets = find_distinct_sets(m,n,k,size)
+            while distinct_sets is None:
+                size -= 1
+                distinct_sets = find_distinct_sets(m,n,k,size)
+            next_result['max_cardinality'] = size
+            next_result['max_sets'] = distinct_sets
+            next_result['greedy_is_max']=size==next_result['greedy_cardinality']
+        print(next_result)
+        results = results.append(next_result, ignore_index=True)
+    return results
 
 
 def generate_data(starting_dimension):
