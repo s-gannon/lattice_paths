@@ -601,7 +601,7 @@ def greedy_max_comparison(m,n,k):
     result = {'m': m,'n': n, 'k': k}
     result['greedy_set'] = tuple(greedy_set(m, n, k))
     result['greedy_cardinality'] = len(result['greedy_set'])
-    up_bound = sum([comb(k,i) for i in range(0,n+1)])
+    up_bound = sum([comb(k,i) for i in range(max(0,k-m),n+1)])
     if up_bound == result['greedy_cardinality']:
         result['greedy_is_max'] = True
         result['max_cardinality'] = result['greedy_cardinality']
