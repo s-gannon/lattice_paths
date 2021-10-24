@@ -323,5 +323,8 @@ func GenerateData(m, n int, outfile_name string) {
 }
 
 func main() {
-  GenerateData(2,2,"test.tsv")
+  args := os.Args[1:]
+  m, _ := strconv.Atoi(args[0])
+  n, _ := strconv.Atoi(args[1])
+  GenerateData(m,n,args[2])
 }
