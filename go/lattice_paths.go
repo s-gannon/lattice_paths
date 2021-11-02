@@ -29,7 +29,7 @@ func fact_recursive(x int) int {
 }
 
 func fact(x int) int {
-  // straightforward recursive factorial implementation
+  // straightforward nonrecursive factorial implementation
   res := 1
   for i := x; i > 1; i-- {
     res = res * i
@@ -347,7 +347,7 @@ func GreedyMaxComparison(m, n, k int, ch chan ComparisonData) {
     var max_sets [][][]bool // create a slice to store the potentially maximum sets
     for max_sets==nil { // as long as the max sets slice contains no sets, we need to look for a smaller size of set
       size-- // decrement the size variable to find sets of the next possible size
-      max_sets = CombinationsAndDistinct(m, n, k, up_bound) // generate and store all sets of the size we are curerntly considering
+      max_sets = CombinationsAndDistinct(m, n, k, size) // generate and store all sets of the size we are curerntly considering
     }
     result.max_order = size // the maxmimum order is the size we have when finally find some maximum sets
     result.max_sets = max_sets // the sets are the current set of maximum sets
