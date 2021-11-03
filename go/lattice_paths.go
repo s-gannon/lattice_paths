@@ -268,7 +268,9 @@ func CombinationsAndDistinct(m, n, k, size int) [][][]bool {
     next_set[i] = paths[x] // initialize the current set to paths number 0, 1, 2, ..., size-1
   }
   if SetKDistinct(k, next_set) { // if the first set is k distinct
-    distinct_combos = append(distinct_combos, next_set) // add it to the set of k distinct sets
+    temp_slice := make([][]bool, size) //temporary slice for holding a copy
+    copy(temp_slice, next_set) // copy next_set into the temp_slice variable
+    distinct_combos = append(distinct_combos, temp_slice) // add it to the set of k distinct sets
   }
   var not_last bool = true // track whether we have the last set
   for not_last {
@@ -283,7 +285,9 @@ func CombinationsAndDistinct(m, n, k, size int) [][][]bool {
           next_set[k] = paths[x] // update the next set with the paths from the given indices
         }
         if SetKDistinct(k, next_set) { // if the set is k distinct
-          distinct_combos = append(distinct_combos, next_set) // add it to the set of k distinct sets
+          temp_slice := make([][]bool, size) //temporary slice for holding a copy
+          copy(temp_slice, next_set) // copy next_set into the temp_slice variable
+          distinct_combos = append(distinct_combos, temp_slice) // add it to the set of k distinct sets
         }
         not_last = true // if we've created another path, we could have another one
         break
