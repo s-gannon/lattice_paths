@@ -166,3 +166,73 @@ def create_report(data_file, save_file):
 
     with open(save_file+'.html','w') as f:
         f.write(html)
+
+def find_diffs(path1, path2):
+    # identify places where strings differ
+    diffs = []
+    for i, c in enumerate(path1):
+        if c != path2[i]:
+            diffs.append(i)
+    return tuple(diffs)
+
+
+def swap_distance(path1, path2):
+    swaps = 0
+    diffs = find_diffs(path1, path2)
+    while len(diffs) > 0:
+        spot = max(diffs)
+        char_needed = path1[spot]
+        nearest = spot - path2[spot::-1].find(char_needed)
+        swaps += spot - nearest
+        path2 = path2[:nearest] + path2[spot] + path2[nearest + 1:spot] + \
+                char_needed + path2[spot + 1:]
+        diffs = find_diffs(path1, path2)
+    return swaps
+
+def match(set1, set2):
+    if len(set1)>len(set2):
+        set1, set2 = set2, set1
+    pairs = {}
+    distances = {}
+    for i, path1 in enumerate(set1):
+        distances[i] = {}
+        for j, path2 in enumerate(set2):
+            if j in pairs.values():
+                continue
+            d = swap_distance(path1, path2)
+            if d == 0:
+                pairs[i] = j
+                distances.pop(i, None)
+                for key in distances:
+                    distances[key].pop(j, None)
+                break
+            distances[i][j] = d
+    # match non zero distances
+    while len(distances):
+        updates = 0
+        closest = min([x for y in distances.values() for x in y.values()])
+        for path in tuple(distances.keys()):
+            if list(distances[path].values()).count(closest) == 1:
+                for p in distances[path]:
+                    if distances[path][p]==closest:
+                        pairs[path] = p
+                        break
+                for key in distances:
+                    distances[key].pop(pairs[path], None)
+                distances.pop(path, None)
+        if not updates:
+            for path in distances:
+                if list(distances[path].values()).count(closest) > 1:
+                    for p in distances[path]:
+                        if distances[path][p]==closest:
+                            pairs[path] = p
+                            break
+                    for key in distances:
+                        distances[key].pop(pairs[path], None)
+                    distances.pop(path, None)
+        comparison = ""
+        for p1 in pairs:
+            comparison += set1[p1] + ' ' + set2[pairs[p1]] + "\n"
+        missing = int((len(set2)*(len(set2)-1))/2 - sum(pairs.values()))
+        comparison += ' '*(len(set1[0])+1) + set2[missing]
+    return comparison
