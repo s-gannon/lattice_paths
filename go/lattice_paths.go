@@ -391,7 +391,8 @@ func GenerateData(m, n int, outfile_name string, k_values []int) {
 	defer datawriter.Flush()                                                        // flush the writer when we finish
 	var next_row ComparisonData                                                     // create a variable to store the next row we receive from the routines
 	var next_row_strings [NUM_ATTR]string                                           // there will be the same number of variables to store as attributes that we have
-	for _, k := range k_values {                                                    // for each k value
+	for _, k := range k_values {
+		fmt.Println(k)                                                   // for each k value
 		next_row = <-channel                                             // get the next row from the buffered channel
 		next_row_strings[0] = strconv.Itoa(next_row.m)                   // convert m to a string
 		next_row_strings[1] = strconv.Itoa(next_row.n)                   // convert n to a string
