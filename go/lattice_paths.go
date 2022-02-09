@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"fmt"
 	"os"
 	"strconv"
 	"strings"
@@ -49,17 +50,17 @@ func comb(n, r int) int {
 
 func LexOrder(m, n int) [][]bool {
 	// genereate all paths on the m by n lattice in lexicographic order
-	path_num := comb(m+n, m)                    // number of unique paths
-	paths := make([][]bool, path_num, path_num) // slice for storing paths
-	paths[0] = make([]bool, m+n, m+n)           // make the first path
+	path_num := comb(m+n, m)          // number of unique paths
+	paths := make([][]bool, path_num) // slice for storing paths
+	paths[0] = make([]bool, m+n)      // make the first path
 	for i := m; i < m+n; i++ {
 		paths[0][i] = true // set the last n valus to true (for north)
 	}
 	for i := 1; i < path_num; i++ {
-		e_locs := make([]int, m, m) // slice for storing location of east steps
-		e_counter := 0              // number of east steps encountered
-		n_counter := 0              // number of north steps encountered
-		var swap int                // index of east step on which we will swap
+		e_locs := make([]int, m) // slice for storing location of east steps
+		e_counter := 0           // number of east steps encountered
+		n_counter := 0           // number of north steps encountered
+		var swap int             // index of east step on which we will swap
 		for j := 0; j < m+n; j++ {
 			if paths[i-1][j] { // if it is a north step
 				n_counter += 1      // incremement north steps
@@ -76,7 +77,7 @@ func LexOrder(m, n int) [][]bool {
 				}
 			}
 		}
-		next_path := make([]bool, m+n, m+n)
+		next_path := make([]bool, m+n)
 		copy(next_path, paths[i-1])       // make a copy of the previous path lexicographically
 		next_path[swap] = true            // set swap east to be north
 		next_path[swap+1] = false         // set following north to be east
@@ -91,17 +92,17 @@ func LexOrder(m, n int) [][]bool {
 func LexOrderProcess(m, n int, ch chan []bool) {
 	// generate all paths on the m by n lattice in lexicographic order and return them over a channel
 	defer close(ch)
-	path_num := comb(m+n, m)            // number of unique paths
-	prev_path := make([]bool, m+n, m+n) // make the first path
+	path_num := comb(m+n, m)       // number of unique paths
+	prev_path := make([]bool, m+n) // make the first path
 	for i := m; i < m+n; i++ {
 		prev_path[i] = true // set the last n valus to true (for north)
 	}
 	ch <- prev_path // send the first path
 	for i := 1; i < path_num; i++ {
-		e_locs := make([]int, m, m) // slice for storing location of east steps
-		e_counter := 0              // number of east steps encountered
-		n_counter := 0              // number of north steps encountered
-		var swap int                // index of east step on which we will swap
+		e_locs := make([]int, m) // slice for storing location of east steps
+		e_counter := 0           // number of east steps encountered
+		n_counter := 0           // number of north steps encountered
+		var swap int             // index of east step on which we will swap
 		for j := 0; j < m+n; j++ {
 			if prev_path[j] { // if it is a north step
 				n_counter += 1      // incremement north steps
@@ -118,7 +119,7 @@ func LexOrderProcess(m, n int, ch chan []bool) {
 				}
 			}
 		}
-		next_path := make([]bool, m+n, m+n)
+		next_path := make([]bool, m+n)
 		copy(next_path, prev_path)        // make a copy of the previous path lexicographically
 		next_path[swap] = true            // set swap east to be north
 		next_path[swap+1] = false         // set following north to be east
@@ -304,6 +305,7 @@ func CombinationsAndDistinct(m, n, k, size int) [][][]bool {
 					temp_slice := make([][]bool, size)                    //temporary slice for holding a copy
 					copy(temp_slice, next_set)                            // copy next_set into the temp_slice variable
 					distinct_combos = append(distinct_combos, temp_slice) // add it to the set of k distinct sets
+					fmt.Println(temp_slice)
 				}
 				not_last = true // if we've created another path, we could have another one
 				break
@@ -376,11 +378,11 @@ func GreedyMaxComparison(m, n, k int, ch chan ComparisonData) {
 	ch <- result // return the struct
 }
 
-func GenerateData(m, n int, outfile_name string) {
+func GenerateData(m, n int, outfile_name string, k_values []int) {
 	// a function for generating data comparing the greedy algorithm to a brute force search on a particular size of lattice
 	channel := make(chan ComparisonData, m+n) // create a channel for receiving data
 	defer close(channel)                      // close the channel when we finish
-	for k := 0; k <= m+n; k++ {               // for all sizes of k, start a routine to generate the needed data
+	for _, k := range k_values {              // for all sizes of k, start a routine to generate the needed data
 		go GreedyMaxComparison(m, n, k, channel)
 	}
 	file, _ := os.OpenFile(outfile_name, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644) // open a file for storing the output
@@ -389,7 +391,7 @@ func GenerateData(m, n int, outfile_name string) {
 	defer datawriter.Flush()                                                        // flush the writer when we finish
 	var next_row ComparisonData                                                     // create a variable to store the next row we receive from the routines
 	var next_row_strings [NUM_ATTR]string                                           // there will be the same number of variables to store as attributes that we have
-	for k := 0; k <= m+n; k++ {                                                     // for each k value
+	for _, k := range k_values {                                                    // for each k value
 		next_row = <-channel                                             // get the next row from the buffered channel
 		next_row_strings[0] = strconv.Itoa(next_row.m)                   // convert m to a string
 		next_row_strings[1] = strconv.Itoa(next_row.n)                   // convert n to a string
@@ -449,5 +451,9 @@ func main() {
 	args := os.Args[1:]           // get the command line arguments
 	m, _ := strconv.Atoi(args[0]) // the first argument should be m
 	n, _ := strconv.Atoi(args[1]) // the second argument should be n
-	GenerateData(m, n, args[2])   // generate the data for the m by n lattice, the last command line argument should be the output file name
+	k_values := make([]int, len(args)-3)
+	for i, k := range args[3:] {
+		k_values[i], _ = strconv.Atoi(k)
+	}
+	GenerateData(m, n, args[2], k_values) // generate the data for the m by n lattice, the last command line argument should be the output file name
 }
