@@ -336,17 +336,24 @@ func GreedyMaxComparisonMoreRoutines(m, n, k int, ch chan ComparisonData) {
 		}
 		result.max_sets = max_sets // update the struct
 	} else { // if the greedy set cardinality is not the upper bound, we need to consider other sizes of set
-		size := up_bound                // start checking the sets at the upper bound
+		size := result.greedy_order     // start checking the sets at the upper bound
 		max_sets := make([][][]bool, 0) // create a slice to store the potentially maximum sets
-		for len(max_sets) == 0 {        // as long as the length of the max_sets slice is zero, we need to look for a smaller size of set
+		still_distinct_sets := true
+		for still_distinct_sets { // as long as the length of the max sets slice is more than zero, we can look for larger sets
+			temp_sets := make([][][]bool, 0)            // temporary variable for storing sets
+			size++                                      //increment the size variable
 			channel := make(chan [][]bool)              // create a channel to receive the sets
 			go FindDistinctSets(m, n, k, size, channel) // start a process to find all the distinct sets of the current size
 			for set := range channel {
-				max_sets = append(max_sets, set) // store the sets
+				temp_sets = append(temp_sets, set) // store the sets
 			}
-			size-- // decrement the size variable, in case we need to keep looking
+			if len(temp_sets) > 0 {
+				copy(max_sets, temp_sets)
+			} else {
+				still_distinct_sets = false
+			}
 		}
-		size++                                                         // once we have a nonzero set of sets, we know that we just decremented size, so we increment it to get the size we actually used
+		size--                                                         // once there are no sets, we decerement to the last value where there were
 		result.max_order = size                                        // the maxmimum order is given by the size we just used
 		result.max_sets = max_sets                                     // the maximum sets are given by the sets we just found
 		result.greedy_is_max = result.max_order == result.greedy_order // the greedy algorithm is maximum if the maximum order equals the greedy order
