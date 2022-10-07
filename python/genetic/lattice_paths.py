@@ -303,7 +303,7 @@ class Population():
         print(len(self.individuals))
 
 def test():
-    world = Population(2000,4,3,4)
+    #world = Population(2000,4,3,4)
     world.num_genes = 35
     world.evolution(310)
         
