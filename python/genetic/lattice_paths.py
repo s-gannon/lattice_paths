@@ -118,7 +118,7 @@ class Population():
         self.r_fitnesses = numpy.array([])
         self.num_genes = 1
         self.sorted = False
-
+        self.max_size = 1000
     def initialize(self):
         for z  in range(self.size):
             new_genome = Genome(self.num_genes,self.m,self.n,self.k)
@@ -150,7 +150,8 @@ class Population():
         #num_duels = int(duel_coef * len(population))
             l = len(self.individuals) # we cannot use this for indexes because the size of the population keeps changing, maybe copying to mating pool will be better
             num_duels = random.randint(0, int(l/2))
-            for i in range(num_duels):
+            #for i in range(num_duels):
+            while(len(self.individuals)>self.max_size):
                 index_1 = random.randint(0, len(self.individuals)-1) #we subtract 1 because the randint() function includes the bounds
                 index_2 = random.randint(0, len(self.individuals)-1)
                 while index_1 == index_2:
@@ -302,7 +303,7 @@ class Population():
         print(len(self.individuals))
 
 def test():
-    world = Population(1000,4,3,4)
+    world = Population(2000,4,3,4)
     world.num_genes = 35
     world.evolution(310)
         
