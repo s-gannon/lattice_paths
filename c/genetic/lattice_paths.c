@@ -25,7 +25,7 @@ int main(int argc, char** argv){
 		return EXIT_SUCCESS;
 	}
 	else if(argc != 6){
-		printf("Invalid number of arguments. Use %s m n k g s\n", argv[0]);
+		printf("Invalid number of arguments. Use %s m n k g s or run %s -h for help\n", argv[0], argv[0]);
 		return EXIT_FAILURE;
 	}
 	//assert positive values for each
@@ -34,25 +34,26 @@ int main(int argc, char** argv){
 	//seed srandom
 	srandom(time(NULL));
 	//start declaring and initializing vars
-	//start with the constants (which are randomized at start)
-	const int NUM_PATHS = (random() % 50) + MINIMUM_PATHS;	//l in the paper
-	const int MUTATE_COEFF = random() % NUM_PATHS;			//mu in the paper
-	//set our argvs to actual variables
-	int lattice_size[2] = {atoi(argv[1]), atoi(argv[2])};
-	int k_dist_val = atoi(argv[3]);
-	int num_generations = atoi(argv[4]);
-	int init_pop_size = atoi(argv[5]);
-	//create initial population
-	person* current_pop = (person*)calloc(init_pop_size, sizeof(person));
-	person* next_pop;
+	//the variables from the command line
+	const uint16_t LATTICE_SIZE[2] = {atoi(argv[1]), atoi(argv[2])};
+	const uint16_t K_DIST = atoi(argv[3]);
+	const uint16_t NUM_GENS = atoi(argv[4]);
+	const uint16_t INIT_POP_SIZE = atoi(argv[5]);
 	//randomized variables
-	int duel_coeff = random() % init_pop_size;		//delta_goal
-	int parent_coeff = (random() % duel_coeff)/2;	//alpha in the paper
+	const uint16_t NUM_PATHS = (random() % 10000) + 100;
+	//pointers and things
+	person* init_pop = (person*)calloc(INIT_POP_SIZE, sizeof(person));
 
-	for(int i = 0; i < (random() % 500) + 100; i++){
-
+	for(int i = 0; i < INIT_POP_SIZE; i++){
+		person_init(&init_pop[i], LATTICE_SIZE[0], LATTICE_SIZE[1], NUM_PATHS);
+		if(isinf(init_pop[i])){
+			person_show(init_pop[i]);
+		}
 	}
 
+	for(int gen = 1; gen <= NUM_GENS; gen++){
+
+	}
 
 	return EXIT_SUCCESS;
 }
