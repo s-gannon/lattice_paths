@@ -291,7 +291,7 @@ class Population():
                     self.best_fitness = a
                     self.bfi = len(self.individuals) + len(self.children) -2#yes, minus 2 
                 elif b > self.best_fitness:
-                    self.bset_fitness = b
+                    self.best_fitness = b
                     self.bfi = len(self.individuals) + len(self.children) -1
                 self.c_fitnesses =numpy.append(self.c_fitnesses, a)
                 self.c_fitnesses = numpy.append(self.c_fitnesses, b) #a before b(in order in which individuals were appended)!
@@ -299,7 +299,7 @@ class Population():
         self.individuals+=self.children
         self.sorted = False
         self.children = []
-        self.fitnesses = numpy.concatenate((self.fitnesses, self.c_fitnesses))
+        self.fitnesses = numpy.append(self.fitnesses, self.c_fitnesses)
         self.c_fitnesses = numpy.array([])
         self.r_fitnesses = numpy.array([])
         self.roulette_ready = False
