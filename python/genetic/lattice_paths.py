@@ -6,41 +6,44 @@ random.seed(getattr(datetime.now(), "microsecond"))
 #generate a sequence depends on the values of m and n
 
 class Sequence():
-    def __init__(self, m, n):
+    def __init__(self, m, n, empty=False):
         assert m >= n
         r=random.randint(0,1)
         self.terms = [[0,0,r]]
         m_count = 0
         n_count = 0
-
-        for i in range(m+n-1):
-            if r==1 and n_count<n:
-                
-                n_count += 1
-                r2 = random.randint(0,1)
-                self.terms.append([self.terms[i][0],self.terms[i][1]+1, r2])
-                r= r2
-            elif r==0 and m_count<m:
-                m_count +=1
-                r2 = random.randint(0,1)
-                self.terms.append([self.terms[i][0]+1,self.terms[i][1], r2])
-                r= r2
-            elif r==1 and n_count==n:
-                self.terms[i] = [self.terms[i][0],self.terms[i][1], 0]
-                for j in range(i, m+n-1):
+        if not empty:
+            for i in range(m+n-1):
+                if r==1 and n_count<n:
                     
-                    self.terms.append([self.terms[j][0]+1,self.terms[j][1], 0])
-                break
-            elif r==0 and m_count==m:
-                self.terms[i] = [self.terms[i][0],self.terms[i][1], 1]
-                for j in range(i, m+n-1):
-                    
-                    self.terms.append([self.terms[j][0],self.terms[j][1]+1, 1])
-                break
-        if self.terms[-1][0] == m:
-            self.terms[-1][2] = 1
-        if self.terms[-1][1] == n:
-            self.terms[-1][2] = 0
+                    n_count += 1
+                    r2 = random.randint(0,1)
+                    self.terms.append([self.terms[i][0],self.terms[i][1]+1, r2])
+                    r= r2
+                elif r==0 and m_count<m:
+                    m_count +=1
+                    r2 = random.randint(0,1)
+                    self.terms.append([self.terms[i][0]+1,self.terms[i][1], r2])
+                    r= r2
+                elif r==1 and n_count==n:
+                    self.terms[i] = [self.terms[i][0],self.terms[i][1], 0]
+                    for j in range(i, m+n-1):
+                        
+                        self.terms.append([self.terms[j][0]+1,self.terms[j][1], 0])
+                    break
+                elif r==0 and m_count==m:
+                    self.terms[i] = [self.terms[i][0],self.terms[i][1], 1]
+                    for j in range(i, m+n-1):
+                        
+                        self.terms.append([self.terms[j][0],self.terms[j][1]+1, 1])
+                    break
+            if self.terms[-1][0] == m:
+                self.terms[-1][2] = 1
+            if self.terms[-1][1] == n:
+                self.terms[-1][2] = 0
+        else:
+            for i in range(m+n-1):
+                self.terms.append([0,0,0])
     def show(self):
         for term in self.terms:
             print(term[0],term[1], term[2], sep=" ", end="   ")
@@ -98,17 +101,24 @@ def translate(patA,to_lan):
         return patO    
                         
 class Genome():
-    def __init__(self, num_sequences, m, n, k):
+    def __init__(self, num_sequences, m, n, k, empty=False):
         self.sequences = []
         self.m = m
         self.n = n
         self.k = k
         #self.poison()
-        for i in range(num_sequences):
-            new_seq = Sequence(self.m, self.n)
-            #while new_seq.ispoison(self.poison1) or new_seq.ispoison(self.poison2):
-                #new_seq = Sequence(self.m, self.n)
-            self.sequences.append(new_seq)
+        if not empty:
+            for i in range(num_sequences):
+                new_seq = Sequence(self.m, self.n)
+                #while new_seq.ispoison(self.poison1) or new_seq.ispoison(self.poison2):
+                    #new_seq = Sequence(self.m, self.n)
+                self.sequences.append(new_seq)
+        else:
+            for i in range(num_sequences):
+                new_seq = Sequence(self.m, self.n, True)
+                self.sequences.append(new_seq)
+            
+                 
 
     def fitness(self):
         penalty = 0
@@ -188,10 +198,32 @@ class Population():
         self.best_fitness = 0
         self.bfi = 0
         self.just_initialized = False
+        self.paths = wdw(m,n)
 
     def initialize(self):
         print("refilling")
-        self.just_initialized = True 
+        self.just_initialized = True
+        l = len(self.paths)
+        i = 0
+        for r in range(50):
+            new_genome = Genome(self.num_genes,self.m,self.n,self.k, True)
+            for s in range(self.num_genes):
+                new_genome.sequences[s].terms = self.paths[i%l]
+                i+=1
+            self.individuals.append(new_genome)
+            f = new_genome.fitness()[0]
+             
+            self.fitnesses = numpy.append(self.fitnesses,f)#you might later want to know where equivalences occur though
+            if f > self.best_fitness:
+                self.best_fitness = f
+                self.bfi = len(self.individuals) -1
+            if f == 9999:
+                new_genome.show()
+                winsound.PlaySound("SystemExclamation", winsound.SND_ALIAS)
+                return True
+            
+            
+            
         for z  in range(self.size):
             new_genome = Genome(self.num_genes,self.m,self.n,self.k)
             self.individuals.append(new_genome)
@@ -279,9 +311,9 @@ class Population():
                     #if not self.sorted:
                         #self.bsort()
                 self.bsort()
-                self.e_fitnesses = softmax(self.fitnesses)
+                #self.e_fitnesses = softmax(self.fitnesses)
                 if numpy.sum(self.r_fitnesses) != 1:
-                    self.r_fitnesses = self.e_fitnesses/numpy.sum(self.e_fitnesses)
+                    self.r_fitnesses = self.fitnesses/numpy.sum(self.fitnesses)
                     sumf = 0
                     for i in range(len(self.r_fitnesses)):
                         self.r_fitnesses[i] = sumf + self.r_fitnesses[i]
@@ -461,14 +493,13 @@ def test(j,m,n,k,mode, mitigate_convergence):
     world.num_genes =j
     best = world.evolution(100000,mode, mitigate_convergence)
     return best
-
-    
-    
-
-    
-        '''
-                
-                
-            
-            
-
+       
+def wdw(m,n):
+    paths = []
+    #you can use while loop to make sure all paths are created
+    for i in range(100000):
+        l = Sequence(m,n)
+        if l.terms not in paths:
+            paths.append(l.terms)
+    print(len(paths))
+    return paths      
