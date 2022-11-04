@@ -1,7 +1,7 @@
- 
-
+#!/usr/bin/python3
 """ Genetic program for Maths Research:finding K distinct paths for an m by n lattice, m>n """
-import random,os, openpyxl
+import random, os, openpyxl
+from system import argv
 from datetime import datetime
 random.seed(getattr(datetime.now(), "microsecond"))
         
@@ -564,7 +564,7 @@ def test(j,m,n,k,mode, mitigate_convergence):
     return best
        
 def run(m,n,k,mode,old_world=0):
-    filename = "lattice_table_" + str(n) + '.xlsx'
+    filename = "lattice_table_" + str(m) + "_" + str(n) + '.xlsx'
     try:
         wb = openpyxl.load_workbook(filename)
     except:
@@ -683,3 +683,6 @@ def swdw(m,n):
                         break
  
         """
+if __name__ == "__main__":
+    m = int(argv[1])
+    collect_data(m,3)
