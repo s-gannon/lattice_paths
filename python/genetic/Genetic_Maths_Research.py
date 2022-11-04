@@ -1,142 +1,86 @@
-""" Genetic program for Maths Research:finding K distinct paths for an m by n lattice, m>n """
+""" Genetic program for Maths Research """
 import random, winsound, numpy
 from datetime import datetime
 random.seed(getattr(datetime.now(), "microsecond"))
-        
+            
 #generate a sequence depends on the values of m and n
 
 class Sequence():
-    def __init__(self, m, n, empty=False):
+    def __init__(self, m, n):
         assert m >= n
         r=random.randint(0,1)
         self.terms = [[0,0,r]]
         m_count = 0
         n_count = 0
-        if not empty:
-            for i in range(m+n-1):
-                if r==1 and n_count<n:
+
+        for i in range(m+n-1):
+            if r==1 and n_count<n:
+                
+                n_count += 1
+                r2 = random.randint(0,1)
+                self.terms.append([self.terms[i][0],self.terms[i][1]+1, r2])
+                r= r2
+            elif r==0 and m_count<m:
+                m_count +=1
+                r2 = random.randint(0,1)
+                self.terms.append([self.terms[i][0]+1,self.terms[i][1], r2])
+                r= r2
+            elif r==1 and n_count==n:
+                self.terms[i] = [self.terms[i][0],self.terms[i][1], 0]
+                for j in range(i, m+n-1):
                     
-                    n_count += 1
-                    r2 = random.randint(0,1)
-                    self.terms.append([self.terms[i][0],self.terms[i][1]+1, r2])
-                    r= r2
-                elif r==0 and m_count<m:
-                    m_count +=1
-                    r2 = random.randint(0,1)
-                    self.terms.append([self.terms[i][0]+1,self.terms[i][1], r2])
-                    r= r2
-                elif r==1 and n_count==n:
-                    self.terms[i] = [self.terms[i][0],self.terms[i][1], 0]
-                    for j in range(i, m+n-1):
-                        
-                        self.terms.append([self.terms[j][0]+1,self.terms[j][1], 0])
-                    break
-                elif r==0 and m_count==m:
-                    self.terms[i] = [self.terms[i][0],self.terms[i][1], 1]
-                    for j in range(i, m+n-1):
-                        
-                        self.terms.append([self.terms[j][0],self.terms[j][1]+1, 1])
-                    break
-            if self.terms[-1][0] == m:
-                self.terms[-1][2] = 1
-            if self.terms[-1][1] == n:
-                self.terms[-1][2] = 0
-        else:
-            for i in range(m+n-1):
-                self.terms.append([0,0,0])
+                    self.terms.append([self.terms[j][0]+1,self.terms[j][1], 0])
+                break
+            elif r==0 and m_count==m:
+                self.terms[i] = [self.terms[i][0],self.terms[i][1], 1]
+                for j in range(i, m+n-1):
+                    
+                    self.terms.append([self.terms[j][0],self.terms[j][1]+1, 1])
+                break
+        if self.terms[-1][0] == m:
+            self.terms[-1][2] = 1
+        if self.terms[-1][1] == n:
+            self.terms[-1][2] = 0
     def show(self):
         for term in self.terms:
             print(term[0],term[1], term[2], sep=" ", end="   ")
     def compare(self,sequence,k):
-        #assert len(self.terms) == len(sequence.terms)
         check= 0
-        for i in range(len(self.terms)):
+        for i in range(len(sequence.terms)):
             if sequence.terms[i] == self.terms[i]:#can make tis better someow
                 check += 1
         if check >= k:
             return 0
         else:
             return 1
-    def ispoison(self,sequence):
-        for i in range(len(self.terms)):
-            if sequence.terms[i] != self.terms[i]:
-                return 0
 
-        return 1
-
-
-
-def translate(patA,to_lan):
-    if to_lan == "to_O":
-        num_0 =0
-        num_1 =0
-        for i in patA:
-            if i:
-                num_1 += 1
-            else:
-                num_0 += 1
-        assert num_0 >= num_1        
-        patO = Sequence(num_0, num_1)
-        for i in range(len(patO.terms)):
-            if i!= len(patA)-1:
-                if patA[i] == 0:
-                    patO.terms[i][2] = 0
-                    patO.terms[i+1][0] = patO.terms[i][0] + 1
-                    patO.terms[i+1][1] = patO.terms[i][1]
-                else:
-                    patO.terms[i][2] = 1
-                    patO.terms[i+1][0] = patO.terms[i][0]
-                    patO.terms[i+1][1] = patO.terms[i][1] +1
-            else:
-                if patA[i] == 0:
-                    patO.terms[i][2] = 0
-                else:
-                    patO.terms[i][2] = 1
-                    
-        return patO
-    elif to_lan == "to_A":
-        patO = []
-        for term in patA.terms:
-            patO.append(term[2])
-        return patO    
-                        
+            
 class Genome():
-    def __init__(self, num_sequences, m, n, k, empty=False):
+    def __init__(self, num_sequences, m, n, k):
         self.sequences = []
         self.m = m
         self.n = n
         self.k = k
-        #self.poison()
-        if not empty:
-            for i in range(num_sequences):
-                new_seq = Sequence(self.m, self.n)
-                #while new_seq.ispoison(self.poison1) or new_seq.ispoison(self.poison2):
-                    #new_seq = Sequence(self.m, self.n)
-                self.sequences.append(new_seq)
-        else:
-            for i in range(num_sequences):
-                new_seq = Sequence(self.m, self.n, True)
-                self.sequences.append(new_seq)
-            
-                 
+        for i in range(num_sequences):
+            self.sequences.append(Sequence(self.m, self.n))
 
     def fitness(self):
         penalty = 0
-        #check =0
+        check =0
         penalty_index = []
 
         for i in range(len(self.sequences)):
             for j in range(i+1,len(self.sequences)):
                 #if i is not j:
-                #for z in range(self.m + self.n):
-                    #if self.sequences[i].terms[z] == self.sequences[j].terms[z]:
-                        #check += 1
-                xo = self.sequences[i].compare(self.sequences[j], self.k)
-                if xo == 0:
-                    #check = x[1]
+                for z in range(self.m + self.n):
+                    if self.sequences[i].terms[z] == self.sequences[j].terms[z]:
+                        check += 1
+                if check >= self.k:
                     penalty += 1
                     penalty_index.append([i,j])
-
+                    check = 0
+                else:
+                    check = 0
         if penalty ==0:
             return (9999, penalty_index)
 
@@ -153,26 +97,6 @@ class Genome():
             r = self.fitness()[-1][random.randint(0,len(self.fitness()[-1])-1)][random.randint(0,1)]
             self.sequences[r] = Sequence(self.m, self.n)
         return self
-
-    def translate(self):
-        translated = []
-        for sequence in self.sequences:
-            translated.append(translate(sequence,"to_A"))
-
-        return translated    
-
-    def poison(self):
-        patA = []
-        patB = []
-        for i in range(self.m):
-            patA.append(0)
-        for i in range(self.n):
-            patA.append(1)
-            patB.append(1)
-        for i in range(self.m):
-            patB.append(0)    
-        self.poison2 = translate(patB, "to_O") 
-        self.poison1 = translate(patA, "to_O")                
     
 #raw evolution, will optimize later*
 
@@ -198,32 +122,9 @@ class Population():
         self.best_fitness = 0
         self.bfi = 0
         self.just_initialized = False
-        self.paths = wdw(m,n)
 
     def initialize(self):
         print("refilling")
-        self.just_initialized = True
-        l = len(self.paths)
-        i = 0
-        for r in range(50):
-            new_genome = Genome(self.num_genes,self.m,self.n,self.k, True)
-            for s in range(self.num_genes):
-                new_genome.sequences[s].terms = self.paths[i%l]
-                i+=1
-            self.individuals.append(new_genome)
-            f = new_genome.fitness()[0]
-             
-            self.fitnesses = numpy.append(self.fitnesses,f)#you might later want to know where equivalences occur though
-            if f > self.best_fitness:
-                self.best_fitness = f
-                self.bfi = len(self.individuals) -1
-            if f == 9999:
-                new_genome.show()
-                winsound.PlaySound("SystemExclamation", winsound.SND_ALIAS)
-                return True
-            
-            
-            
         for z  in range(self.size):
             new_genome = Genome(self.num_genes,self.m,self.n,self.k)
             self.individuals.append(new_genome)
@@ -231,13 +132,12 @@ class Population():
             self.fitnesses = numpy.append(self.fitnesses,f)#you might later want to know where equivalences occur though
             if f > self.best_fitness:
                 self.best_fitness = f
-                self.bfi = len(self.individuals) -1
+                self.bfi = z
             if f == 9999:
                 new_genome.show()
                 winsound.PlaySound("SystemExclamation", winsound.SND_ALIAS)
-                return True
-        return False    
-               
+                return (len(self.individuals),self.c+1)
+        self.just_initialized = True        
     def bsort(self):
         #assert self.sorted == False
         assert len(self.individuals) == len(self.fitnesses)
@@ -253,7 +153,6 @@ class Population():
                         self.fitnesses[j] = self.fitnesses[j+1]
                         self.individuals[j+1] = temp
                         self.fitnesses[j+1] = temp1
-            self.bfi = 0            
             self.sorted = True
         
     def battle(self, mode = "keep_fit"):
@@ -281,7 +180,6 @@ class Population():
         elif mode == "keep_fit":
             top_n = 10 
             self.bsort()
-            ###note to myself, new children are at the end of the population so needless to sort for info pool
             #l = len(self.individuals)
             #num_duels = random.randint(0, int(l/2))
             #num_duels = 0.57
@@ -311,7 +209,7 @@ class Population():
                     #if not self.sorted:
                         #self.bsort()
                 self.bsort()
-                #self.e_fitnesses = softmax(self.fitnesses)
+                    #self.e_fitnesses = softmax(self.fitnesses)
                 if numpy.sum(self.r_fitnesses) != 1:
                     self.r_fitnesses = self.fitnesses/numpy.sum(self.fitnesses)
                     sumf = 0
@@ -347,8 +245,8 @@ class Population():
     def mating(self, mode = "random_random"):
         #mating_coef = ra'ndom.random()
         print("mating")
-        mating_coef = 0.7
-        self.just_initialized = False 
+        mating_coef = 0.6
+        self.just_initialized = False
         l = len(self.individuals)
         for j in range(int(mating_coef * l)):
             co_coef = random.random()
@@ -359,7 +257,7 @@ class Population():
 
                 new_child_1 = Genome(self.num_genes,self.m,self.n,self.k)
                 new_child_2 = Genome(self.num_genes, self.m,self.n,self.k)
-                if encoding_part_1 == 1:#you can reduce this to two for loops ... indexin usin num_genes-s maybe
+                if encoding_part_1 == 1:
                     for s in range(int(self.num_genes * co_coef)):
                            
                         new_child_1.sequences[s] = self.individuals[parent_1_index].sequences[s]
@@ -387,20 +285,19 @@ class Population():
 
                 a =new_child_1.fitness()[0]
                 b=new_child_2.fitness()[0]
-                self.c_fitnesses =numpy.append(self.c_fitnesses, a)
-                self.c_fitnesses = numpy.append(self.c_fitnesses, b) #a before b(in order in which individuals were appended)!
                 if a > self.best_fitness:
                     self.best_fitness = a
-                    self.bfi = len(self.individuals) + len(self.children) -2#yes, minus 2 since a is appended before b
+                    self.bfi = len(self.individuals) + len(self.children) -2#yes, minus 2 
                 elif b > self.best_fitness:
-                    self.best_fitness = b
+                    self.bset_fitness = b
                     self.bfi = len(self.individuals) + len(self.children) -1
-
+                self.c_fitnesses =numpy.append(self.c_fitnesses, a)
+                self.c_fitnesses = numpy.append(self.c_fitnesses, b) #a before b(in order in which individuals were appended)!
 
         self.individuals+=self.children
         self.sorted = False
         self.children = []
-        self.fitnesses = numpy.append(self.fitnesses, self.c_fitnesses)
+        self.fitnesses = numpy.concatenate((self.fitnesses, self.c_fitnesses))
         self.c_fitnesses = numpy.array([])
         self.r_fitnesses = numpy.array([])
         self.roulette_ready = False
@@ -435,71 +332,41 @@ class Population():
             if self.best_fitness == 9999:
                 assert self.individuals[self.bfi].fitness()[0] == 9999
                 self.individuals[self.bfi].show()
-                winsound.PlaySound("SystemExclamation", winsound.SND_ALIAS)
                 return True
             else:
-                print(self.bfi,self.individuals[self.bfi].fitness()[0],self.best_fitness)
-                assert self.individuals[self.bfi].fitness()[0] == self.best_fitness
                 print(self.best_fitness)
         return False    
         
-    def evolution(self,eons,mode,mitigate_convergence):
-        
-        #self.bsort()
-        #found = False
-        found = self.initialize()
+    def evolution(self,eons,mode):
+        self.initialize()
+        self.bsort()
+        found = False
         for i in range(1,eons):
             if found == False:
-                if self.just_initialized==False:
+                if not self.just_initialized:
                     self.battle("non_bias_random")
-                    self.mating(mode)
-                else:
-                    self.mating("random_random")
+                self.mating(mode)
                 found = self.check("speedy")
                 print(i)
-                #self.sorted = False not necessary, since sorted after check
-                #self.sorted = False #yes, because not sorted after speedy check; IN fact not needed since not sorted = false after matin
+                #self.sorted = False not necessary, since sorted after check 
                 
             else:
-                
                 print(i)
-                print("self.bfi = ", self.bfi)
-                print("solutions = {},m = {}, n = {}, k = {}".format(self.num_genes,self.m,self.n, self.k))
-                print("size of population", len(self.individuals), "best fitness", self.best_fitness)
-                return self.individuals[self.bfi]
+                print(len(self.individuals))
                 break
             if (i)%10 == 0:
-                found = self.initialize()
-                self.sorted = False
-                self.roulette_ready = False
-            if (i)%30 == 0 and mitigate_convergence==True:
-                world_temp = Population(400,self.m,self.n,self.k)
-                world_temp.num_genes =self.num_genes
-                best_temp = world_temp.evolution(29,mode,False)
-                self.individuals+=world_temp.individuals
-                self.fitnesses = numpy.append(self.fitnesses,world_temp.fitnesses)
-                assert len(self.fitnesses)== len(self.individuals)
                 self.initialize()
                 self.sorted = False
                 self.roulette_ready = False
-        print("solutions = {},m = {}, n = {}, k = {}".format(self.num_genes,self.m,self.n, self.k))        
-        print("size of sub-population", len(self.individuals), "best fitness", self.best_fitness)
-        print("bfi, size of pop",self.bfi, len(self.individuals))
-        return self.individuals[self.bfi]
-        
+        print(len(self.individuals))
 
-def test(j,m,n,k,mode, mitigate_convergence):
+def test(j,m,n,k,mode):
     world = Population(400,m,n,k)
     world.num_genes =j
-    best = world.evolution(100000,mode, mitigate_convergence)
-    return best
-       
-def wdw(m,n):
-    paths = []
-    #you can use while loop to make sure all paths are created
-    for i in range(100000):
-        l = Sequence(m,n)
-        if l.terms not in paths:
-            paths.append(l.terms)
-    print(len(paths))
-    return paths      
+    world.evolution(10000,mode)
+        
+ 
+                
+            
+            
+
