@@ -564,7 +564,7 @@ def test(j,m,n,k,mode, mitigate_convergence):
     return best
        
 def run(m,n,k,mode,old_world=0):
-    filename = "lattice_table_" + str(m) + "_" + str(n) + '.xlsx'
+    filename = "lattice_table_" + str(n) + '.xlsx'
     try:
         wb = openpyxl.load_workbook(filename)
     except:
