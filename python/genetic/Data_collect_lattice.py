@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 """ Genetic program for Maths Research:finding K distinct paths for an m by n lattice, m>n """
 import random, os, openpyxl
-from system import argv
+from sys import argv
 from datetime import datetime
 random.seed(getattr(datetime.now(), "microsecond"))
         
