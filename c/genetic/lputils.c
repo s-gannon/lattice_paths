@@ -10,12 +10,10 @@
 
 //Returns the minimum unsigned 32-bit integers between `a` and `b`
 uint32_t min_uint32(uint32_t a, uint32_t b){
-	//we don't care about the == case because the same value will be returned
 	return (a < b ? a : b);
 }
 //Returns the minimum double between `a` and `b`
 double min_double(double a, double b){
-	//we don't care about the == case because the same value will be returned
 	return (a < b ? a : b);
 }
 //Softmax
@@ -24,7 +22,7 @@ double* softmax(double* x, size_t x_size){
 	double sum = 0;
 
 	for(int i = 0; i < x_size; i++){
-		soft[i] = pow(2.7, i);
+		soft[i] = pow(2.7, x[i]);
 		sum += soft[i];
 	}
 
@@ -33,39 +31,6 @@ double* softmax(double* x, size_t x_size){
 	}
 
 	return soft;
-}
-//Returns `n` factorial
-uint32_t factorial(uint32_t n){
-	uint32_t i;
-	uint32_t ret = 1;
-
-	for(i = 0; i < n; i++){
-		ret = ret * i;
-	}
-	
-	return ret;
-}
-/* Calculates the binomial coefficient of 'n choose k'. If `3` is returned, there was an integer overflow.
-Algorithm stolen from https://en.wikipedia.org/wiki/Binomial_coefficient#In_programming_languages
-*/
-uint32_t binom_coeff(uint32_t n, uint32_t k){
-	uint32_t i;
-	uint32_t c = 1;
-
-	//takes advantage of symmetry
-	if(k > (n - k)){
-		k = n - k;
-	}
-	
-	for(i = 1; i <= k; i++, n--){
-		if((c / i) > (UINT32_MAX / n)){
-			fprintf(stderr, "[ERROR] Overflow in binomial coefficient calculation!\n");
-			exit(EXIT_FAILURE);
-		}
-		c = c / i * n + c % i * n / i;
-	}
-
-	return c;
 }
 //Normalizes all of the numbers in `nums` and returns a list with length `size_nums`
 double* normalize(double* nums, size_t size_nums){
@@ -92,3 +57,49 @@ double* dot_product(double* nums1, double* nums2, double a, double b, size_t siz
 
 	return nums3;
 }
+
+void bubble_sort(double* pivot, double* b, size_t size_pivot, size_t size_b){
+	assert(size_pivot == size_b);
+	for(int i = 0; i < size_pivot; i++){
+		for(int j = 0; j < size_pivot - i - 1; j++){
+			if(pivot[j] <= pivot[j + 1]){
+				double temp = pivot[j];
+				pivot[j] = pivot[j + 1];
+				pivot[j + 1] = temp;
+
+				temp = b[j];
+				b[j] = b[j + 1];
+				b[j + 1] = temp;
+			}
+		}
+	}
+}
+
+void quick_sort(double* arr, size_t size_arr){
+	/*
+	I'm skipping this for now. Implementing Fayol's definiton would cause a recursive include problem
+	due to the fact that the Genome object's fitness() function is called in quick sort and array is a list of 
+	Genome objects. So, lputils.h would be included in genome.h and genome.h would be included in lputils.h.
+	This is illegal.
+	*/
+	return;
+}
+//Returns `n` factorial
+uint32_t factorial(uint32_t n){
+	uint32_t i;
+	uint32_t ret = 1;
+
+	for(i = 0; i < n; i++){
+		ret = ret * i;
+	}
+	
+	return ret;
+}
+// Binomial coefficient of `m` choose `n`.
+uint32_t combination(uint32_t m, uint32_t n){
+	assert(m >= n);
+	
+	return factorial(m) / (factorial(n) * factorial(m - n));
+}
+
+

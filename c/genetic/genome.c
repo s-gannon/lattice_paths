@@ -6,12 +6,12 @@
 #include "sequence.h"
 #include "genome.h"
 
-void genome_init(genome_t* gen, uint16_t m, uint16_t n, uint16_t k, uint16_t num_sequences){
-	gen->m = m;
-	gen->n = n;
-	gen->k = k;
-	gen->num_sequences = num_sequences;
-	gen->sequences = calloc(num_sequences, sizeof(sequence_t));
+void genome_init(genome_t* self, size_t num_sequences, uint32_t m, uint32_t n, uint32_t k, genome_t* paths, size_t len_paths, bool empty){
+	self->m = m;
+	self->n = n;
+	self->k = k;
+	self->num_sequences = num_sequences;
+	self->sequences = calloc(num_sequences, sizeof(sequence_t));
 
 	for(int i = 0; i < num_sequences; i++){
 		sequence_init(&gen->sequences[i], m, n);
