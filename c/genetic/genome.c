@@ -2,9 +2,9 @@
 #include <stdlib.h>
 #include <stdint.h>
 
+#include "genome.h"
 #include "lputils.h"
 #include "sequence.h"
-#include "genome.h"
 
 void genome_init(genome_t* self, size_t num_sequences, uint32_t m, uint32_t n, uint32_t k, genome_t* paths, size_t len_paths, bool empty){
 	self->m = m;

@@ -14,14 +14,31 @@
 #define SEEDED_RANDOM false
 #define DEBUG_STATEMENTS true
 
+/*
++-+-+-+
+| | | |
++-+-+-+ n
+| | | |
++-+-+-+
+   m
+*/
+
 //	moves function
 
-//Generates a new move given the (`m`, `n`) position. A random direction is chosen for each move generated.
-move_t move_init(uint32_t m, uint32_t n){
-	if(SEEDED_RANDOM)
+/*
+Generates a new move given the (`m`, `n`) position. 
+A random direction is chosen if `dir` is 2, NORTH if `dir` is `NORTH`, or EAST if `dir` is `EAST`.
+*/
+move_t move_init(uint32_t m, uint32_t n, uint8_t dir){
+	if(SEEDED_RANDOM){
+		if(DEBUG_STATEMENTS)
+			printf("[DEBUG] Seeding move_init with current time...\n");
 		srand(time(NULL));	//only seeds with the time if the macro is true
+	}
 	
-	return (move_t){.m = m, .n = n, .dir = (rand() % 2 == 0 ? NORTH : EAST)};	//ternary redundant, but more legible
+	if(dir == 2)
+		return (move_t){.m = m, .n = n, .dir = (rand() % 2 == 0 ? NORTH : EAST)};	//ternary redundant, but more legible
+	return (move_t){.m = m, .n = n, .dir = dir};
 }
 //Flips the direction of the move. If the move was directed `EAST`, it will be flipped `NORTH` and vice versa.
 void move_flip_dir(move_t* move){
@@ -30,7 +47,7 @@ void move_flip_dir(move_t* move){
 //Compares two moves. Returns `1` if they are different and `0` if they are the same.
 int move_compare(move_t mov1, move_t mov2){
 	if(DEBUG_STATEMENTS)
-		printf("[INFO] Comparing moves %d %d %c and %d %d %c...\n",
+		printf("[DEBUG] Comparing moves %d %d %c and %d %d %c...\n",
 			mov1.m, 
 			mov1.n, 
 			mov1.dir == NORTH ? 'N' : 'E',
@@ -43,40 +60,52 @@ int move_compare(move_t mov1, move_t mov2){
 		if(mov1.n == mov2.n){
 			if(mov1.dir == mov2.dir){
 				if(DEBUG_STATEMENTS)
-					printf("[INFO] The moves are the same.\n");
+					printf("[DEBUG] The moves are the same.\n");
 				return 0;
 			}
 		}
 	}
 	if(DEBUG_STATEMENTS)
-		printf("[INFO] The moves are different.\n");
+		printf("[DEBUG] The moves are different.\n");
 	return 1;
 }
 
 //	sequences functions
 
-//Initializes a new sequence (path) on an `m` by `n` lattice. The sequence length will always be length `m` times `n`.
-void sequence_init(sequence_t* self, uint32_t m, uint32_t n, sequence_t* paths, size_t len_paths, uint32_t index, bool empty){
+/*
+Initializes a new sequence (path) on an `m` by `n` lattice. If `index` is set to UINT32_MAX, then we will choose a random index.
+If `ALL_PATHS` is NULL, then the sequence will be initialized as empty.
+*/
+void sequence_init(sequence_t* self, uint32_t m, uint32_t n, uint32_t index, const sequence_t* ALL_PATHS, const size_t LEN_PATHS){
 	assert(m >= n);
+	assert((index < LEN_PATHS) || ((LEN_PATHS == 0) && (index == 0)));
 
 	if(SEEDED_RANDOM){
 		if(DEBUG_STATEMENTS)
-			printf("[INFO] Seeding sequence_init with current time...\n");
+			printf("[DEBUG] Seeding sequence_init with current time...\n");
 		srand(time(NULL));	//only seeds with the time if the macro is true
+	}
+
+	if(DEBUG_STATEMENTS){
+		printf("[DEBUG] Initializing sequence...\n");
 	}
 
 	self->m = m;
 	self->n = n;
 	self->length = m + n;
 	self->num_moves = 0;
-	self->moves = (move_t*)calloc(self->length, sizeof(move_t));
+	self->moves = calloc(self->length, sizeof(move_t));	//initialized as empty by default
 
-	if(!empty){
-		self->path_index = ((index == UINT32_MAX) ? (rand() % len_paths) : index);
-		self->moves = paths[self->path_index].moves;
+	if(DEBUG_STATEMENTS){
+		printf("[DEBUG] Sequence initialized!\n");
 	}
-	else{
 
+	if(!ALL_PATHS){	//same as ALL_PATHS != NULL
+		assert(self->length == ALL_PATHS[0].length);
+
+		self->path_index = ((index == UINT32_MAX) ? (rand() % LEN_PATHS) : index);
+		self->moves = ALL_PATHS[self->path_index].moves;
+		self->num_moves = ALL_PATHS[self->path_index].num_moves;
 	}
 
 	//My implementation of initializing moves randomly
@@ -137,34 +166,36 @@ int sequence_same_paths(sequence_t self, sequence_t seq){
 	return 1;
 }
 
-void sequence_generate_paths(uint32_t current_row, uint32_t current_col, sequence_t path, uint32_t m, uint32_t n, sequence_t* paths, size_t size_paths, const size_t MAX_PATHS_SIZE){
+void sequence_generate_paths(uint32_t current_m, uint32_t current_n, sequence_t path, sequence_t* paths, size_t size_paths, const size_t MAX_PATHS_SIZE){
 	assert(size_paths < MAX_PATHS_SIZE);
 
-	if((current_row == m) && (current_col == n)){
+	if((current_m == path.m) && (current_n == path.n)){
 		paths[size_paths++] = path;
 		return;
 	}
-
-	if(current_row < m){
-
+	if(current_m < path.m){
+		path.moves[path.num_moves++] = move_init(current_m, current_n, EAST);
+		sequence_generate_paths(current_m + 1, current_n, path, paths, size_paths, MAX_PATHS_SIZE);
 	}
-
-	if(current_col < n){
-
+	if(current_n < path.n){
+		path.moves[path.num_moves++] = move_init(current_m, current_n, NORTH);
+		sequence_generate_paths(current_m, current_n + 1, path, paths, size_paths, MAX_PATHS_SIZE);
 	}
 }
 
 sequence_t* sequence_generate_all_paths(uint32_t m, uint32_t n){
-	size_t max_length = combination(m + n, n);
+	size_t max_length = binom_coeff(m + n, n);
 	sequence_t empty;
 	sequence_t* paths = calloc(max_length, sizeof(sequence_t));
-	sequence_t* real_paths = calloc(max_length, sizeof(sequence_t));
 
-	sequence_generate_paths(0, 0, empty, m, n, paths, 0, max_length);
+	//initialize all paths as empty
 	for(int i = 0; i < max_length; i++){
-		real_paths[i] = paths[i];
+		sequence_init(&paths[i], m, n, 0, NULL, 0);
 	}
+	sequence_init(&empty, m, n, 0, NULL, 0);
+	//generate all paths starting from (0,0)
+	sequence_generate_paths(0, 0, empty, paths, 0, max_length);
 
-	return real_paths;
+	return paths;
 }
 
