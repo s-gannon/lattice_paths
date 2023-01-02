@@ -35,7 +35,7 @@ void move_flip_dir(move_t* move);
 //Compares two moves. Returns `1` if they are different and `0` if they are the same.
 int move_compare(move_t mov1, move_t mov2);
 
-//	sequence functions
+//	sequence functionsz
 
 //Initializes a new sequence (path) on an `m` by `n` lattice. The sequence length will always be length `m` times `n`.
 void sequence_init(sequence_t* self, uint32_t m, uint32_t n, uint32_t index, const sequence_t* ALL_PATHS, const size_t LEN_PATHS);

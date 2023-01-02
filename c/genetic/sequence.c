@@ -27,7 +27,7 @@
 
 /*
 Generates a new move given the (`m`, `n`) position. 
-A random direction is chosen if `dir` is 2, NORTH if `dir` is `NORTH`, or EAST if `dir` is `EAST`.
+A random direction is chosen if `dir` is 2, 0 if `dir` is `NORTH`, or 1 if `dir` is `EAST`.
 */
 move_t move_init(uint32_t m, uint32_t n, uint8_t dir){
 	if(SEEDED_RANDOM){
@@ -38,6 +38,7 @@ move_t move_init(uint32_t m, uint32_t n, uint8_t dir){
 	
 	if(dir == 2)
 		return (move_t){.m = m, .n = n, .dir = (rand() % 2 == 0 ? NORTH : EAST)};	//ternary redundant, but more legible
+	
 	return (move_t){.m = m, .n = n, .dir = dir};
 }
 //Flips the direction of the move. If the move was directed `EAST`, it will be flipped `NORTH` and vice versa.
@@ -65,8 +66,10 @@ int move_compare(move_t mov1, move_t mov2){
 			}
 		}
 	}
+
 	if(DEBUG_STATEMENTS)
 		printf("[DEBUG] The moves are different.\n");
+	
 	return 1;
 }
 
@@ -134,6 +137,7 @@ void sequence_show(sequence_t seq, const int FORMAT){
 		else	//FMT_NUM
 			printf("%d %d %c\n", seq.moves[i].m, seq.moves[i].n, (seq.moves[i].dir == EAST ? 'E' : 'N'));
 	}
+
 	if(FORMAT == FMT_ENG)
 		printf("\n");
 	
@@ -173,10 +177,12 @@ void sequence_generate_paths(uint32_t current_m, uint32_t current_n, sequence_t 
 		paths[size_paths++] = path;
 		return;
 	}
+
 	if(current_m < path.m){
 		path.moves[path.num_moves++] = move_init(current_m, current_n, EAST);
 		sequence_generate_paths(current_m + 1, current_n, path, paths, size_paths, MAX_PATHS_SIZE);
 	}
+
 	if(current_n < path.n){
 		path.moves[path.num_moves++] = move_init(current_m, current_n, NORTH);
 		sequence_generate_paths(current_m, current_n + 1, path, paths, size_paths, MAX_PATHS_SIZE);
@@ -192,6 +198,7 @@ sequence_t* sequence_generate_all_paths(uint32_t m, uint32_t n){
 	for(int i = 0; i < max_length; i++){
 		sequence_init(&paths[i], m, n, 0, NULL, 0);
 	}
+	
 	sequence_init(&empty, m, n, 0, NULL, 0);
 	//generate all paths starting from (0,0)
 	sequence_generate_paths(0, 0, empty, paths, 0, max_length);
