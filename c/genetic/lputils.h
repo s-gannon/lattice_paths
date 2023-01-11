@@ -4,6 +4,22 @@
 #include <stddef.h>
 #include <stdint.h>
 
+//	additional macros
+
+#define STR_SIZE 256
+
+//	structures
+
+typedef struct string_s{
+	char chars[STR_SIZE];
+} string_t;
+
+typedef struct dict_s{
+	size_t size, max_size;
+	string_t* keys;
+	double* values;
+} dict_t;
+
 //Softmax algorithm
 double* softmax(double* x,  size_t x_size);
 //Normalizes all of the numbers in `nums` and returns a list with length `size_nums`

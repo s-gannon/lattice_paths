@@ -23,7 +23,10 @@ int main(int argc, char** argv){
 		exit(EXIT_FAILURE);
 	}
 
-	const sequence_t* ALL_PATHS = sequence_generate_all_paths(argv[1], argv[2]);
+	assert(atoi(argv[1]) > 0);
+	assert(atoi(argv[2]) > 0);
+
+	const move_t* ALL_PATHS = sequence_generate_all_paths(atoi(argv[1]), atoi(argv[2]));
 
 	exit(EXIT_SUCCESS);
 }

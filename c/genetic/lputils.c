@@ -24,22 +24,23 @@ double* softmax(double* x, size_t x_size){
 
 	return soft;
 }
-//Normalizes all of the numbers in `nums` and returns a list with length `size_nums`
+/*
+Normalizes all of the numbers in `nums` and returns a list with length 
+`size_nums`.
+*/
 double* normalize(double* nums, size_t size_nums){
 	double sum = 0;
 	double* new_nums = calloc(size_nums, sizeof(nums[0]));
 
-	for(int i = 0; i < size_nums; i++){
+	for(int i = 0; i < size_nums; i++)
 		sum += nums[i];
-	}
 
-	for(int i = 0; i < size_nums; i++){
+	for(int i = 0; i < size_nums; i++)
 		new_nums[i] = (nums[i] / sum);
-	}
 
 	return new_nums;
 }
-//Returns the dot product of the two lists `nums1` and `nums2`
+//Returns the dot product of the two lists `nums1` and `nums2`.
 double dot_product(double* nums1, double* nums2, size_t size_nums1, size_t size_nums2){
 	assert(size_nums1 == size_nums2);
 	double sum = 0;
@@ -49,7 +50,7 @@ double dot_product(double* nums1, double* nums2, size_t size_nums1, size_t size_
 
 	return sum;
 }
-//Returns `n` factorial
+//Returns `n` factorial (`n`!).
 uint32_t factorial(uint32_t n){
 	uint32_t ret = 1;
 

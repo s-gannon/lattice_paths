@@ -14,12 +14,18 @@ void genome_init(genome_t* self, size_t num_sequences, uint32_t m, uint32_t n, u
 	self->sequences = calloc(num_sequences, sizeof(sequence_t));
 
 	for(int i = 0; i < num_sequences; i++){
-		sequence_init(&gen->sequences[i], m, n);
+		sequence_init(
+			&self->sequences[i], 
+			m, 
+			n,
+			UINT32_MAX,
+			sequence_generate_all_paths(m, n),
+			);
 	}
 }	
 
-void genome_generate_sequences(genome_t* gen){
-	for(int i = 0; i < gen->num_sequences; i++){
-		sequence_init(&gen->sequences[i], gen->m, gen->n);
+void genome_generate_sequences(genome_t* self, genome_t* paths, size_t len_paths, bool empty){
+	for(int i = 0; i < self->num_sequences; i++){
+		sequence_init(&self->sequences[i], self->m, self->n);
 	}
 }
